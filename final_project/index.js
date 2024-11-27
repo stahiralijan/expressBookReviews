@@ -10,8 +10,20 @@ app.use(express.json());
 
 app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
 
+// authentication middleware
 app.use("/customer/auth/*", function auth(req,res,next){
-//Write the authenication mechanism here
+    const token = req.session?.token;
+
+    if(token == undefined || !token) {
+        return res.status(403).json({message: "Please login to continue."});
+    }
+    jwt.verify(token, 'fingerprint_customer', (err, user) => {
+        if (err) {
+            return res.status(403).json({message: "Please login to continue."});
+        }
+        req.user = user;
+        next();
+  });
 });
  
 const PORT =5000;

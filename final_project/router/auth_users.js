@@ -6,24 +6,67 @@ const regd_users = express.Router();
 let users = [];
 
 const isValid = (username) => {
+
   return ! (users.length > 0 && users.filter(user => user.username === username));
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
-  return users.filter(user => user.username === username && user.password === password);
+const authenticatedUser = (username,password) => {
+
+  const user = users.filter(user => user.username === username && user.password === password);
+
+  return (user.length >= 1);
 }
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-  //Write your code here
+  
+  const username = req.body?.username;
+  const password = req.body?.password;
+
+  if(!username) {
+    return res.status(403).json({message: "Username is required!"});
+  }
+
+  if(!password) {
+    return res.status(403).json({message: "Password is required!"});
+  }
+
+  if(authenticatedUser(username, password)) {
+    let token = jwt.sign({username}, 'fingerprint_customer', { expiresIn: "1h"});
+    
+    req.session.token = token;
+    res.header.authorization = token;
+    return res.status(200).json({message: "Login successful"});
+  }
+
   return res.status(403).json({message: "Incorrect username or password"});
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+
+  const isbn = req.params.isbn;
+  const review = req.body.reviews;
+
+  if(!isbn) {
+    return res.status(400).json({message: "ISBN is required"});
+  }
+
+  if(!review) {
+    return res.status(400).json({message: "Reviews are required"});
+  }
+
+  let book = books[isbn];
+
+  if(!book) {
+    return res.status(400).json({message: "Book not found"});
+  }
+
+  book.reviews[req.user.username] = review;
+
+  books[isbn] = book;
+
+  return res.status(200).json({message: "Book review updated"});
 });
 
 module.exports.authenticated = regd_users;
