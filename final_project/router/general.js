@@ -28,8 +28,10 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/', function (req, res) {
-  
-  return  res.status(200).json(books);
+  let getBooks = new Promise((resolve, reject) => {
+    resolve(books);
+  });
+  return getBooks.then(books => res.status(200).json(books));
 });
 
 // Get book details based on ISBN
@@ -38,7 +40,10 @@ public_users.get('/isbn/:isbn', function (req, res) {
   const isbn = req.params.isbn;
 
   if(isbn) {
-      return  res.status(200).json(books[isbn]);
+      let getBookByISBN = new Promise((resolve, reject) => {
+        resolve(books[isbn]);
+      });
+      return getBookByISBN.then(book => res.status(200).json(book));
   }
   
   return res.status(404).json({message: "Book not found!"});
@@ -67,13 +72,15 @@ public_users.get('/title/:title',function (req, res) {
 
   const title = req.params.title;
   if(title) {
-    let keys = Object.keys(books);
-    for(let key of keys) {
-      
-      if(books[key].title == title) {
-        return res.status(200).json(books[key]);
+    let getBookByTitle = new Promise((resolve, reject) => {
+      let keys = Object.keys(books);
+      for(let key of keys) {
+        if(books[key].title == title) {
+          resolve(books[key]);
+        }
       }
-    }
+    });
+    return getBookByTitle.then(book => res.status(200).json(book));
   }
   
   return res.status(404).json({message: "Book not found!"});
