@@ -46,7 +46,7 @@ regd_users.post("/login", (req,res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
 
   const isbn = req.params.isbn;
-  const review = req.body.reviews;
+  const review = req.body.review;
 
   if(!isbn) {
     return res.status(400).json({message: "ISBN is required"});
